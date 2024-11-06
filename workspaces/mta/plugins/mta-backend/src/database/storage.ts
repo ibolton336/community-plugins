@@ -3,6 +3,7 @@ import { Knex } from 'knex';
 import { Logger } from 'winston';
 import path from 'path';
 import dotenv from 'dotenv';
+import { version } from '../../package.json'; // Importing the version from package.json
 
 const ENTITY_APPLICATION_TABLE = 'entity-application-mapping';
 const OAUTH_MAPPING_TABLE = 'oauth-mapping';
@@ -15,7 +16,7 @@ const defaultPluginRoot = path.join(
   process.env.APP_ROOT || '/opt/app-root', // Fallback to a hardcoded default if APP_ROOT is not set
   'src',
   'dynamic-plugins-root',
-  'backstage-community-backstage-plugin-mta-backend-dynamic-0.2.0',
+  `backstage-community-backstage-plugin-mta-backend-dynamic-${version}`,
 );
 
 // Check if running in development environment
