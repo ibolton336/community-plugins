@@ -15,7 +15,7 @@ const defaultPluginRoot = path.join(
   process.env.APP_ROOT || '/opt/app-root', // Fallback to a hardcoded default if APP_ROOT is not set
   'src',
   'dynamic-plugins-root',
-  'backstage-community-backstage-plugin-mta-backend-dynamic-0.1.1',
+  'backstage-community-backstage-plugin-mta-backend-dynamic-0.2.0',
 );
 
 // Check if running in development environment

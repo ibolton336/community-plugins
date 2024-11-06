@@ -1,6 +1,6 @@
 dynamicPlugins:
   frontend:
-    internal.backstage-plugin-mta-frontend:
+    backstage-community.backstage-plugin-mta-frontend:
       dynamicRoutes:
         - path: /mta
           importName: EntityMTAContent
