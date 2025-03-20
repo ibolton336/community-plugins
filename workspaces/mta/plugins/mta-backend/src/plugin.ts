@@ -33,8 +33,6 @@ export const mtaPlugin = createBackendPlugin({
         httpAuth,
         http,
       }) {
-        logger.info('Initializing MTA plugin');
-
         const router = Router();
         router.use(express.json());
 
@@ -97,8 +95,6 @@ export const mtaPlugin = createBackendPlugin({
 
         router.use(async (request, response, next) => {
           try {
-            logger.info(`Incoming request: ${request.path}`);
-
             if (
               request.path.includes('/cb') ||
               request.path.includes('/health')
@@ -110,27 +106,18 @@ export const mtaPlugin = createBackendPlugin({
             const credentials = await httpAuth.credentials(request, {
               allow: ['user'],
             });
-            logger.info(
-              `Credentials extracted: ${JSON.stringify(credentials)}`,
-            );
 
             const backstageID = await userInfo.getUserInfo(credentials);
-            logger.info(`Backstage user info: ${JSON.stringify(backstageID)}`);
 
             const userId = backstageID?.userEntityRef ?? 'undefined';
 
             let accessToken = await cache.get(String(userId));
-            logger.info(
-              `Cached access token for user ${userId}: ${accessToken ? 'Exists' : 'Not Found'}`,
-            );
 
             if (!accessToken) {
               const refreshToken =
                 await entityApplicationStorage.getRefreshTokenForUser(userId);
 
               if (refreshToken) {
-                logger.info(`Refresh token found for user: ${userId}`);
-
                 if (isTokenExpired(refreshToken)) {
                   logger.warn(`Refresh token expired for user: ${userId}`);
                 } else {
@@ -152,9 +139,6 @@ export const mtaPlugin = createBackendPlugin({
                         tokenSet.refresh_token,
                       );
                     }
-                    logger.info(
-                      `Access token refreshed successfully for user: ${userId}`,
-                    );
                   }
                 }
               } else {
@@ -169,9 +153,6 @@ export const mtaPlugin = createBackendPlugin({
                 code_challenge_method: 'S256',
               });
 
-              logger.info(
-                `Redirecting user ${userId} to login: ${authorizationURL}`,
-              );
               response.status(401).json({ loginURL: authorizationURL });
               return; // Ensures function exits after response is sent
             }
@@ -189,22 +170,13 @@ export const mtaPlugin = createBackendPlugin({
         // Callback Routes
         router.get('/cb/:username', async (request, response) => {
           try {
-            logger.info(
-              `Callback triggered for user: ${request.params.username}`,
-            );
-
             const encodedUser = request.params.username;
             const user = decodeURIComponent(encodedUser);
             const params = authClient.callbackParams(request);
-            logger.info(
-              `OAuth callback params received: ${JSON.stringify(params)}`,
-            );
 
             const callbackUrl = new URL(
               `${backstageBaseURL}/api/mta/cb/${encodeURIComponent(user)}`,
             );
-
-            logger.info(`OAuth callback URL: ${callbackUrl}`);
 
             const tokenSet = await authClient.callback(
               callbackUrl.toString(),
@@ -212,10 +184,6 @@ export const mtaPlugin = createBackendPlugin({
               {
                 code_verifier,
               },
-            );
-
-            logger.info(
-              `OAuth token set received: ${JSON.stringify(tokenSet)}`,
             );
 
             if (!tokenSet.access_token || !tokenSet.refresh_token) {
@@ -234,7 +202,6 @@ export const mtaPlugin = createBackendPlugin({
               tokenSet.refresh_token,
             );
 
-            logger.info(`Tokens stored for user: ${user}`);
             response.redirect(
               request.query.continueTo?.toString() ?? frontEndBaseURL,
             );
@@ -315,12 +282,6 @@ export const mtaPlugin = createBackendPlugin({
             const analysisOptions = request.body; // Assuming all other required options are passed in the body
             const { application, targetList } = analysisOptions;
 
-            logger.info('Received request to analyze application:', {
-              applicationId,
-              application,
-              targetList,
-            });
-
             const TASKGROUPS = `${baseURLHub}/taskgroups`;
             // Step 1: Create a task group
 
@@ -355,7 +316,6 @@ export const mtaPlugin = createBackendPlugin({
             };
 
             const createTaskgroup = async (obj: Taskgroup) => {
-              console.log('obj', obj);
               const createTaskgroupResponse = await fetch(TASKGROUPS, {
                 method: 'POST',
                 headers: {
@@ -419,7 +379,7 @@ export const mtaPlugin = createBackendPlugin({
                   `HTTP error! status: ${submitTaskgroupResponse.status}, body: ${errorText}`,
                 );
               }
-              // Return the status code to indicate success or no content
+
               logger.info(
                 `Operation successful, status code: ${submitTaskgroupResponse.status}`,
               );
@@ -457,7 +417,6 @@ export const mtaPlugin = createBackendPlugin({
                   included: targetList,
                 },
               };
-              console.log('submitted taskgroup', taskgroupResponse);
               await submitTaskgroup(taskgroupResponse);
               logger.info(
                 `Taskgroup submitted. Status: ${response?.status ?? 'unknown'}`,
