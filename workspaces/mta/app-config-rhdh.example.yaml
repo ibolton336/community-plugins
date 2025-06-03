@@ -13,32 +13,32 @@ data:
       title: Red Hat Developer Hub - Migration Toolkit for Applications
       baseUrl: <BACKSTAGE_URL>
     backend:
-      baseUrl: <BACKSTAGE_URL>
+      baseUrl:  <BACKSTAGE_URL>
       cors:
         origin: <BACKSTAGE_URL>
         methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
         credentials: true
-      auth:
-        dangerouslyDisableDefaultAuthPolicy: true
 
     mta:
       url: <MTA_URL>
-      backendPluginVersion: "<MTA_BACKEND_PLUGIN_PACKAGE_VERSION>"
-      backendPluginRoot: "<MTA_BACKEND_PLUGIN_ROOT>"
+      backendPluginVersion: "0.3.0"
+      backendPluginRoot: "/opt/app-root/src/dynamic-plugins-root/backstage-community-backstage-plugin-mta-backend-0.3.0"
       providerAuth:
         realm: mta
         secret: backstage-provider-secret
         clientID: backstage-provider
-
+    signInPage: github
     auth:
-      dangerouslyDisableDefaultAuthPolicy: true
+      environment: production
       providers:
-        guest: 
-          dangerouslyAllowOutsideDevelopment: true
+        github:
+          production:
+            clientId: '${AUTH_GITHUB_CLIENT_ID}'
+            clientSecret: '${AUTH_GITHUB_CLIENT_SECRET}'
 
     dynamicPlugins:
       frontend: 
-        backstage-community.backstage-plugin-mta-frontend:
+        ianbolton.backstage-plugin-mta-frontend:
           entityTabs:
             - path: /mta
               title: MTA
@@ -56,6 +56,18 @@ data:
                   allOf:
                     - isKind: component 
                     - isType: service
+
+    integrations:
+      github:
+        - host: github.com
+          apps:
+            - appId: '${AUTH_GITHUB_APP_ID}'
+              clientId: '${AUTH_GITHUB_CLIENT_ID}'
+              clientSecret: '${AUTH_GITHUB_CLIENT_SECRET}'
+              privateKey: |
+                ${GITHUB_PRIVATE_KEY}
+              webhookSecret: none
+
     catalog:
       import:
         entityFilename: catalog-info.yaml
@@ -72,3 +84,21 @@ data:
           target: create-application-template.yaml
           rules:
             - allow: [Template]
+      providers:
+        github:
+          providerId:
+            catalogPath: /catalog-info.yaml
+            organization: ${GITHUB_ORGANIZATION}
+            schedule:
+              frequency: { seconds: 2 }
+              initialDelay: { seconds: 15 }
+              timeout: { seconds: 30 }
+        githubOrg:
+          githubUrl: 'https://github.com'
+          id: production
+          orgs:
+            - ${GITHUB_ORGANIZATION}
+          schedule:
+              frequency: { seconds: 2 }
+              initialDelay: { seconds: 15 }
+              timeout: { seconds: 30 }
