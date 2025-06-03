@@ -9,17 +9,25 @@ import {
   Grid,
 } from '@material-ui/core';
 import { useForm, Controller } from 'react-hook-form';
-import { useFetchTargets, useAnalyzeApplication } from '../../queries/mta';
-import { useEntity } from '@backstage/plugin-catalog-react';
-import { Application } from '../../api/api';
+import { Application, Target } from '../../api/api';
 import { InfoCard } from '@backstage/core-components';
 
 interface IFormInput {
   type: string;
   targetList: string[];
+  targets: Target[];
+  analyzeApp: any;
 }
 
-export const AnalysisPage = () => {
+export const AnalysisPage = ({
+  targets,
+  entity,
+  analyzeApp,
+}: {
+  targets?: Target[];
+  entity: any;
+  analyzeApp: any;
+}) => {
   const { control, handleSubmit, watch } = useForm<IFormInput>({
     defaultValues: {
       type: '',
@@ -27,12 +35,6 @@ export const AnalysisPage = () => {
     },
   });
   const [isAnalyzing, setIsAnalyzing] = React.useState(false);
-  const entity = useEntity();
-
-  const { targets } = useFetchTargets();
-
-  const { mutate: analyzeApp } = useAnalyzeApplication({});
-
   const labelOptions = targets
     ? targets?.flatMap(target =>
         target?.labels?.map(label => ({

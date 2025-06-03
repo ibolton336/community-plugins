@@ -8,6 +8,11 @@ import { ApplicationDetailsHeader } from './ApplicationDetailsHeader';
 import { useApi } from '@backstage/core-plugin-api';
 import ApplicationDetails from '../AppCard/ApplicationDetails';
 import AnalysisStatusPage from '../AnalysisPage/AnalysisStatusPage';
+import {
+  useAnalyzeApplication,
+  useFetchAppTasks,
+  useFetchTargets,
+} from '../../queries/mta';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -37,6 +42,11 @@ export const MTAApplicationManager = () => {
     useState<Application>(initialApplication);
   const [isWaiting, setIsWaiting] = React.useState(false);
 
+  const { targets } = useFetchTargets();
+
+  const { mutate: analyzeApp } = useAnalyzeApplication({});
+  const { tasks, isFetching } = useFetchAppTasks(initialApplication.id);
+
   React.useEffect(() => {
     if (entity) {
       catalogApi
@@ -45,12 +55,12 @@ export const MTAApplicationManager = () => {
             entity.metadata.namespace || 'default'
           }/${entity.metadata.name}`,
         )
-        .then(appEntity => {
+        .then((appEntity: any) => {
           setApplication(
             appEntity?.metadata.application as unknown as Application,
           );
         })
-        .catch(error => {
+        .catch((error: any) => {
           throw new Error(
             `Error fetching application entity: ${error.message}`,
           );
@@ -110,8 +120,12 @@ export const MTAApplicationManager = () => {
             spacing={2}
             style={{ marginTop: '2vh', minHeight: '100vh' }}
           >
-            <AnalysisPage />
-            <AnalysisStatusPage application={application} />
+            <AnalysisPage
+              targets={targets}
+              entity={entity}
+              analyzeApp={analyzeApp}
+            />
+            <AnalysisStatusPage tasks={tasks} isFetching={isFetching} />
           </Grid>
         )}
       </Grid>
