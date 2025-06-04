@@ -17,5 +17,10 @@ spec:
     extraEnvs:
       secrets:
         - name: github-secret
+    dynamicPluginsRoot:
+      persistentVolumeClaim:
+        claimName: dynamic-plugins-root
+        size: 1Gi
+        storageClassName: ibmc-file-gold
   database:
     enableLocalDb: true
