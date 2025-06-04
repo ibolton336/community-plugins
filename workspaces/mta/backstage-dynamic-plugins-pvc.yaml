@@ -1,0 +1,13 @@
+# backstage-dynamic-plugins-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backstage-dynamic-plugins-root
+  namespace: local-backstage
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: ibmc-file-gold
