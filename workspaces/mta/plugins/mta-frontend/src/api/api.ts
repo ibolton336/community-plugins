@@ -36,12 +36,34 @@ export interface TaskDashboard {
 }
 export class AuthenticationError extends Error {
   public loginUrl: string;
+  public shouldRedirect: boolean;
 
-  constructor(loginUrl: string) {
-    window.location.href = loginUrl;
+  constructor(loginUrl: string, shouldRedirect: boolean = true) {
     super(`Authentication required at ${loginUrl}`);
     this.name = 'AuthenticationError';
     this.loginUrl = loginUrl;
+    this.shouldRedirect = shouldRedirect;
+
+    // Redirect to login URL immediately if shouldRedirect is true
+    if (shouldRedirect) {
+      // Direct redirect without setTimeout
+      window.location.href = loginUrl;
+    }
+  }
+
+  // Helper method to handle authentication errors
+  static handleAuthError(error: any): boolean {
+    // Check if it's an authentication error
+    if (error instanceof AuthenticationError) {
+      // If the error has a login URL but shouldn't redirect automatically,
+      // we can manually redirect here if needed
+      if (!error.shouldRedirect && error.loginUrl) {
+        // For now, we're not redirecting automatically to prevent navigation issues
+        // We could log this, but avoiding console statements due to ESLint rules
+        return true;
+      }
+    }
+    return false;
   }
 }
 
